@@ -1,10 +1,12 @@
 This repository is used to store the various playbooks and software bundles used for Platform Provisioning using Ansible Framework
 
 Examples of Platforms Provisioned include
+<pre>
 1. Drupal
 2. WordPress
 3. Apache + Tomcat + mod-jk
 4. Apache + JBOSS + mod-jk
+</pre>
 
 Ansible Tower was used to run the playbooks (jobs) - https://ansibletower.mycompanydomain.com
 

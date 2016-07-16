@@ -1,0 +1,7 @@
+---
+
+#This playbook will install and configure PHP and its extensions
+
+- include: install_php.yml
+- include: add_php_extension.yml 
+- include: php_customization.yml

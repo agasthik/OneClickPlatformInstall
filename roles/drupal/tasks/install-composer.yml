@@ -1,0 +1,44 @@
+---
+
+- name: Download Composer installer.
+  shell: cd {{ install_temp_directory }} && wget --proxy=on --no-check-certificate -O {{ install_temp_directory }}/composer.phar https://getcomposer.org/installer
+  environment: proxy_env  
+  when: server_env == 'intranet'   
+
+- name: Download Composer installer - proxy_dc1_dmz_web_env
+  shell: cd {{ install_temp_directory }} && wget --proxy=on --no-check-certificate -O {{ install_temp_directory }}/composer.phar https://getcomposer.org/installer
+  environment: proxy_dc1_dmz_web_env  
+  when: server_env == 'dc1_dmz_web'   
+
+- name: Download Composer installer - proxy_dc1_dmz_sec_env
+  shell: cd {{ install_temp_directory }} && wget --proxy=on --no-check-certificate -O {{ install_temp_directory }}/composer.phar https://getcomposer.org/installer
+  environment: proxy_dc1_dmz_sec_env  
+  when: server_env == 'dc1_dmz_sec'   
+
+- name: Rename composer-installer
+  shell: mv {{ install_temp_directory }}/composer.phar {{ install_temp_directory }}/composer-installer.php  
+
+- name: Run Composer installer - intranet environment.
+  shell: cd {{ install_temp_directory }} && /usr/local/php/bin/php {{ install_temp_directory }}/composer-installer.php
+  environment: proxy_env 
+  when: server_env == 'intranet'  
+
+- name: Run Composer installer -  proxy_dc1_dmz_web_env
+  shell: cd {{ install_temp_directory }} && /usr/local/php/bin/php {{ install_temp_directory }}/composer-installer.php
+  environment:  proxy_dc1_dmz_web_env 
+  when: server_env == 'dc1_dmz_web'
+
+- name: Run Composer installer - proxy_dc1_dmz_sec_env
+  shell: cd {{ install_temp_directory }} && /usr/local/php/bin/php {{ install_temp_directory }}/composer-installer.php
+  environment: proxy_dc1_dmz_sec_env 
+  when: server_env == 'dc1_dmz_sec'
+
+- name: Move Composer into globally-accessible location.
+  shell: mv {{ install_temp_directory }}/composer.phar {{ composer_path }} creates={{ composer_path }}
+
+# Post Composer Installation, update the system level PATH
+- name: Add Composer to system level PATH variable. 
+  lineinfile: dest=/etc/profile line='export PATH=/usr/local/bin:$PATH' insertafter='EOF' regexp='export PATH=/usr/local/bin:\$PATH' state=present
+
+- name: Update wget to ignore ssl-certificate errors
+  shell: echo "check_certificate = off" > $HOME/.wgetrc

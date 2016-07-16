@@ -1,0 +1,12 @@
+---
+#This playbook will install the Apache Web Server with PHP module module 
+
+- hosts: all
+  remote_user: openplatform
+  sudo: True
+
+  roles: 
+    - rollback
+    - apache
+    - php
+    - cleanup

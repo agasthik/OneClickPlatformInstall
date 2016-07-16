@@ -1,0 +1,11 @@
+---
+
+#This playbook will upgrade the git version on the system, install Composer and Drdc2
+
+#- include: upgrade-git.yml (As we are not fetching the templates from github. Uncomment when templates are placed on github)
+- include: install-composer.yml
+- include: install-drdc2-site.yml
+- include: install-drupal.yml
+
+# Agasthi-Unit-Test
+#- include: sed-test.yml

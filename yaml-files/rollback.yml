@@ -1,0 +1,96 @@
+---
+
+- name: Playbook to execute the rollback steps
+  hosts: all
+  remote_user: openplatform
+  sudo: True
+
+  tasks:
+
+# Remove MySQL
+
+  - name: Stop MySQL
+    service: name=mysqld state=stopped 
+    ignore_errors: yes    
+
+  - name: Remove MySQL Data Directory
+    file: path=/var/lib/mysql state=absent
+
+  - name: Remove mysql installation
+    file: path=/var/mysql state=absent
+
+# Remove Apache Stuff
+  - name: Stop Apache
+    shell: cd {{ apache_prefix }}/bin && ./apachectl -k stop
+    ignore_errors: yes    
+
+  - name: Delete The Apache installation
+    file: path={{ apache_prefix }} state=absent
+
+  - name: Delete Apache Soft Link
+    file: path=/opt/www/webserver/apache state=absent
+
+  - name: Remove pcretest 
+    file: path=/usr/local/bin/pcretest state=absent
+
+  - name: Remove pcre-config 
+    file: path=/usr/local/bin/pcre-config state=absent
+
+  - name: Remove pcregrep 
+    file: path=/usr/local/bin/pcregrep state=absent
+
+# Remove The Document Root for Drupal
+  - name: Delete The Drupal Web Document Root
+    file: path={{ drupal_site_root }} state=absent
+
+# Remove The Document Root for WordPress
+  - name: Delete The WordPress Web Document Root
+    file: path={{ wordpress_site_root }} state=absent
+
+# Remove the php installed
+  - name: Remove php
+    file: path=/usr/local/php/ state=absent
+
+# Remove Memcached
+  - name: Stop memcached
+    service: name=memcached state=stopped
+    ignore_errors: yes
+
+  - name: Remove memcached sysconfig file
+    file: path=/etc/sysconfig/memcached state=absent
+
+  - name: Remove memcached sysconfig file
+    file: path=/etc/init.d/memcached state=absent
+
+  - name: Remove memcached sysconfig file
+    file: path=/var/run/memcached state=absent
+
+# Remove all the installed rpms
+#  - name: Remove all rpms
+#    yum: pkg={{ item }} state=absent
+#    with_items:
+#     - zlib
+#     - zlib-devel
+#     - gcc
+#     - gcc-c++
+#     - glibc
+#     - glibc-common
+#     - make
+#     - wget
+#     - libevent
+#     - libevent-devel
+#     - libevent-doc
+#     - libevent-headers
+#     - mysql-devel
+#     - mysql-libs
+#     - mysql
+#     - libjpeg-devel
+#     - libpng-devel
+#     - libxml2-devel
+#     - libcurl-devel
+#     - openssl
+#     - openssl-devel
+#     - openldap
+#     - openldap-devel
+#     - libtool
+#    ignore_errors: yes

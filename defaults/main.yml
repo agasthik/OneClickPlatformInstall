@@ -1,0 +1,12 @@
+---
+
+#File which contains default values of variables
+
+web_server_ip_node1: 192.168.0.5
+db_server_ip_node1: 192.168.0.6
+
+web_server_ip_node2: 192.168.0.7
+db_server_ip_node2: 192.168.0.8
+
+web_server_ip_node3: 192.168.0.9
+db_server_ip_node3: 192.168.0.10

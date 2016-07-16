@@ -1,0 +1,29 @@
+#!/bin/bash
+
+#Wrapper Script to Startup / Shutdown JBOSS Service
+
+    # Source function library.
+    . /etc/init.d/functions
+
+    JBOSS_HOME="/opt/www/appserver/jboss"
+
+    case "$1" in
+     start)
+            if [ -f $JBOSS_HOME/bin/jboss-start.sh ];
+              then
+                echo "Starting JBOSS"
+                /bin/su - {{ instance_owner }} $JBOSS_HOME/bin/jboss-start.sh
+            fi
+            ;;
+     stop)
+            if [ -f $JBOSS_HOME/bin/jboss-stop.sh ];
+              then
+                echo "Stopping JBOSS"
+                /bin/su - {{ instance_owner }} $JBOSS_HOME/bin/jboss-stop.sh
+            fi
+            ;;
+     *)
+            echo $"Usage: $0 {start|stop}"
+            exit 1
+            ;;
+    esac

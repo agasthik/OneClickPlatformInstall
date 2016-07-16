@@ -1,0 +1,11 @@
+---
+#This playbook will install Nginx webserver
+
+- hosts: all
+  remote_user: openplatform
+  sudo: True
+
+  roles: 
+    - rollback
+    - nginx
+    - cleanup

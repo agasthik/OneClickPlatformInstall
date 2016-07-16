@@ -1,0 +1,9 @@
+---
+ - name: Start JBOSS 
+   shell: "{{ jboss_prefix }}/bin/jboss-start.sh"
+
+ - name: Stop JBOSS
+   shell: "{{ jboss_prefix }}/bin/jboss-stop.sh" 
+
+ - name: Restart JBOSS
+   shell: cd {{ jboss_prefix }}/bin && ./jboss-stop.sh && sleep 15 && ./jboss-start.sh

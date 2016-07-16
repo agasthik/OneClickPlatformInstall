@@ -1,0 +1,122 @@
+---
+# This playbook will copy over Apache / Apr and Apr-Utils / PCRE from the Control Machine Repository to the target machine and install the software from source
+
+
+- name: Create install_soft directory to hold the installers
+  file: path={{ install_temp_directory }} owner={{ instance_owner }} group={{ instance_owner }} mode=0755 state=directory
+
+- name: Copy installers from Control Machine to Target Machine
+  copy: src={{ playbook_dir }}/roles/apache/files/ dest={{ install_temp_directory }} mode=0664
+
+- name: Verify zlib , zlib-devel , gcc , glibc , glibc-common , make and wget libraries are present
+  yum: pkg={{ item }} state=present
+  with_items:
+   - zlib
+   - zlib-devel
+   - gcc
+   - gcc-c++
+   - glibc
+   - glibc-common
+   - make
+   - wget
+
+- name: Unpack PCRE source files
+  shell: cd {{ install_temp_directory }} && tar -xzf {{ pcresrc }}.tar.gz creates={{ install_temp_directory }}/{{ pcresrc }}
+
+- name: Configure PCRE with default options
+  shell: cd {{ install_temp_directory }}/{{ pcresrc }} && ./configure creates={{ install_temp_directory }}/{{ pcresrc }}/Makefile
+
+- name: Make - PCRE
+  shell: cd {{ install_temp_directory }}/{{ pcresrc }} && make creates={{ install_temp_directory }}/{{ pcresrc }}/pcre_chartables.c
+
+- name: Make install - PCRE
+  shell: cd {{ install_temp_directory }}/{{ pcresrc }} && make install creates={{ pcre_config_location }}
+
+- name: Unpack HTTPD source files
+  shell: cd {{ install_temp_directory }} && tar -xzf {{ httpdsrc }}.tar.gz creates={{ install_temp_directory }}/{{ httpdsrc }}
+
+- name: Unpack APR source files
+  shell: cd {{ install_temp_directory }} && tar -xzf {{ aprsrc }}.tar.gz creates={{ install_temp_directory }}/{{ aprsrc }}
+
+- name: Unpack APR-UTIL source files
+  shell: cd {{ install_temp_directory }} && tar -xzf {{ aprutilsrc }}.tar.gz creates={{ install_temp_directory }}/{{ aprutilsrc }}
+
+- name: Copy APR source inside the HTTPD source
+  command: chdir={{ install_temp_directory }} /bin/mv {{ aprsrc }} {{ httpdsrc }}/srclib/apr creates={{ httpdsrc }}/srclib/apr
+
+- name: Copy APR-UTIL source inside the HTTPD source
+  command: chdir={{ install_temp_directory }} /bin/mv {{ aprutilsrc }} {{ httpdsrc }}/srclib/apr-util creates={{ httpdsrc }}/srclib/apr-util
+
+- name: Configure Apache with options
+  command: chdir={{ install_temp_directory }}/{{ httpdsrc }}  /bin/bash ./configure --prefix={{apache_prefix}} --enable-so --with-mpm=prefork --with-included-apr --with-pcre={{ pcre_config_location }} --enable-mods-shared='access_compat ext_filter include filter substitute sed setenvif remoteip autoindex dumpio log_debug log_forensic authz_core authz_host mime mime_magic log_config logio env expires headers status vhost_alias dir speling alias unixd rewrite' creates={{ install_temp_directory }}/{{ httpdsrc }}/Makefile
+
+- name: Make - Apache
+  shell: cd {{ install_temp_directory }}/{{ httpdsrc }} && make
+
+- name: Make install - Apache   
+  shell: cd {{ install_temp_directory }}/{{ httpdsrc }} && make install creates={{ apache_prefix }}
+
+- name: Create Apache Soft Link
+  file: src={{ apache_prefix }} dest=/opt/www/webserver/{{ apache_softlink_name }} state=link owner=root group=root force=yes
+
+- name: Include the http-vhosts.conf file
+  lineinfile: 
+    dest={{ apache_prefix }}/conf/httpd.conf
+    line='Include conf/extra/httpd-vhosts.conf'
+    insertafter='EOF'
+    regexp='Include conf/extra/httpd-vhosts.conf'
+    state=present
+
+- name: Create Default Document Root Directory
+  file: 
+    path=/var/www/site-content 
+    owner={{ instance_owner }}
+    group={{ instance_group }}
+    mode=0755
+    state=directory
+    force=yes
+
+- name: Place phpinfo.php file in the DocumentRoot directory
+  template: 
+    src=phpinfo.php.j2
+    dest=/var/www/site-content/phpinfo.php 
+    mode=0755
+    owner={{ instance_owner }}
+    group={{ instance_group }}
+    force=yes
+
+- name: Place index.html file in the DocumentRoot directory
+  template: 
+    src=index.html.j2
+    dest=/var/www/site-content/index.html
+    mode=0755
+    owner={{ instance_owner }}
+    group={{ instance_group }}
+    force=yes
+
+- name: Enable mod-rewrite for Drupal Clean URLs
+  shell: sed -i 's,#\(LoadModule rewrite_module modules/mod_rewrite.so\),\1,g' {{ apache_prefix }}/conf/httpd.conf  
+
+- name: Update Apache Runtime User in httpd.conf
+  shell: sed -i '1,$s/User daemon/User {{ instance_owner }}/g' {{ apache_prefix }}/conf/httpd.conf
+
+- name: Update Apache Runtime Group in httpd.conf
+  shell: sed -i '1,$s/Group daemon/Group {{ instance_group }}/g' {{ apache_prefix }}/conf/httpd.conf
+
+- name: Update Apache ServerName in httpd.conf
+  shell: sed -i '1,$s/#ServerName www.example.com:80/ServerName {{ ansible_fqdn }}/g' {{ apache_prefix }}/conf/httpd.conf
+
+- name: Place the Apache Startup and Shutdown scripts
+  file: src={{ apache_prefix }}/bin/{{ item.src }} dest=/etc/rc3.d/{{ item.dest }} owner=root group=root state=link
+  with_items:
+    - { src: 'apachectl', dest: 'S96Apache' }
+    - { src: 'apachectl', dest: 'K96Apache' }
+
+- name: Add apache vhosts configuration.
+  template:
+    src: "httpd-vhosts.conf.j2"
+    dest: "{{ apache_prefix }}/{{ apache_vhosts_file }}"
+    owner: root
+    group: root
+    mode: 0644
+  notify: Restart Apache

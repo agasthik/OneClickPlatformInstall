@@ -1,0 +1,9 @@
+---
+ - name: Start Apache 
+   shell: cd {{ apache_prefix }}/bin && ./apachectl -k start
+
+ - name: Stop Apache  
+   shell: cd {{ apache_prefix }}/bin && ./apachectl -k stop
+
+ - name: Restart Apache
+   shell: cd {{ apache_prefix }}/bin && ./apachectl -k restart

@@ -1,0 +1,87 @@
+---
+# This playbook will copy over PHP source and other libraries from the Control Machine Repository to the target machine and install the software from source
+# @TODO - Replace /usr/local/php/bin with {{ php_prefix }}/bin
+
+- name: Create install_soft directory to hold the installers
+  file: path={{ install_temp_directory }} owner={{ instance_owner }} group={{ instance_owner }} mode=0755 state=directory
+
+- name: Copy installers from Control Machine to Target Machine
+  copy: src={{ playbook_dir }}/roles/php/files/ dest={{ install_temp_directory }} mode=0664
+
+- name: Remove older versions of php
+  yum: pkg={{ item }} state=absent
+  with_items:
+   - php-cli
+   - php-common
+   - php
+   - php-mysql
+   - php-pdo
+   - php-gd
+
+- name: Verify if the various libraries are present. If not present install them
+  yum: pkg={{ item }} state=present
+  with_items:
+   - zlib
+   - zlib-devel
+   - gcc
+   - glibc
+   - glibc-common
+   - make
+   - wget
+   - mysql-libs
+   - mysql
+   - mysql-devel
+   - libjpeg-devel
+   - libpng-devel
+   - libxml2-devel
+   - libcurl-devel
+   - openssl
+   - openssl-devel
+   - openldap
+   - openldap-devel
+   - libtool   
+
+- name: Check if old lib64/php/modules directory exists
+  stat: path=/usr/lib64/php
+  register: foo_stat
+
+- name: Remove old lib64/php/modules directory
+  command: mv /usr/lib64/php /usr/lib64/php-o
+  when: foo_stat.stat.exists   
+
+- name: Stop Apache if currently running
+  shell: cd {{ apache_prefix }}/bin && ./apachectl configtest
+  notify: Stop Apache
+
+- name: Unpack PHP source files
+  shell: cd {{ install_temp_directory }} && tar -xzvf {{ phpsrc }}.tar.gz creates={{ install_temp_directory }}/{{ phpsrc }}
+
+- name: Configure PHP with options
+  command: chdir={{ install_temp_directory }}/{{ phpsrc }}  /bin/bash ./configure --prefix={{ php_prefix }} --with-config-file-path=/etc --with-libdir=lib64 --with-config-file-scan-dir=/etc/php.d --with-ldap=/usr  --with-gd --enable-soap  --enable-sockets  --enable-mbstring  --enable-zip --enable-mysqlnd --with-png-dir  --with-jpeg-dir --with-apxs2={{ apache_apx2_path }} --with-mysql=/usr/ --with-pdo-mysql=mysqlnd --with-mysqli=mysqlnd --with-zlib --with-zlib-dir=/usr --with-openssl=/usr/ --with-pear --with-curl=/usr/ creates={{ install_temp_directory }}/{{ phpsrc }}/Makefile
+
+- name: Make - PHP
+  shell: cd {{ install_temp_directory }}/{{ phpsrc }} && make
+
+- name: Make install - PHP
+  shell: cd {{ install_temp_directory }}/{{ phpsrc }} && make install creates={{ php_prefix }}
+
+- name: Ensure Libraries are copied over to Apache Installation Directory
+  shell: libtool --finish {{ install_temp_directory }}/{{ phpsrc }}/libs
+
+# Commenting out updating the PATH as new approach to create softlinks for php libraries will be used
+# Post PHP Installation, other required PHP extensions are installed via pear package manager  
+#- name: Update system level PATH variableAdding the path in the bashrc files
+#  lineinfile: dest=/etc/profile line='export PATH=/usr/local/php/bin:$PATH' insertafter='EOF' regexp='export PATH=/usr/local/php/bin:\$PATH' state=present
+
+#- name: Source the bashrc file
+#  shell: source /etc/profile 
+# Comment out ends
+
+# Create Symbolic Links for various php programs
+- file: src=/usr/local/php/bin/php  dest=/usr/bin/php owner=root group=root state=link force=yes
+- file: src=/usr/local/php/bin/phpize  dest=/usr/bin/phpize owner=root group=root state=link force=yes
+- file: src=/usr/local/php/bin/php-config dest=/usr/bin/php-config owner=root group=root state=link force=yes
+- file: src=/usr/local/php/bin/php-cgi dest=/usr/bin/php-cgi owner=root group=root state=link force=yes
+- file: src=/usr/local/php/bin/pecl dest=/usr/bin/pecl owner=root group=root state=link force=yes
+- file: src=/usr/local/php/bin/pear dest=/usr/bin/pear owner=root group=root state=link force=yes
+- file: src=/usr/local/php/bin/peardev dest=/usr/bin/peardev owner=root group=root state=link force=yes

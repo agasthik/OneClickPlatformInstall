@@ -1,0 +1,33 @@
+# Script Name          : - jboss-env.sh
+# Script Purpose       : - Custom script written to define the environment variables required by "webuser" and "devuser" accounts. This script also defines the custom aliases required for frequently used JBOSS / Apache Administration Tasks. It has been tested on OEL 6.5
+# Author               : - Agasthi Kothurkar
+# Creation Date        : - 20 August 2014
+# Version              : - 1.0 ( Initial Version)
+# Repository           : - http://github.mycompanydomain.com/my-user-id/OraclePlatformRepo/jboss-6-eap-scripts
+# Release notes
+
+
+#All the environment variables required by the application servers and code to execute
+
+JBOSS_HOME=/opt/www/appserver/jboss
+JAVA_HOME=/opt/www/java/jdk
+PATH=$JAVA_HOME/bin:$PATH
+JBA_CONFIG=/opt/www/apps/config
+JBA_DEPLOY=/opt/www/apps/deploy
+AS_LOG=/opt/www/logs/appserver/jboss
+AS_APPLOG=/opt/www/logs/appserver/jboss/app
+APACHE_HOME=/opt/www/webserver/apache
+WS_LOG=/opt/www/logs/webserver/apache
+
+export JBOSS_HOME JAVA_HOME PATH JBA_CONFIG JBA_DEPLOY AS_LOG AS_APPLOG APACHE_HOME WS_LOG
+
+
+#Aliases defined for effective server start / stop tasks
+alias apache_restart='sudo /opt/www/webserver/apache/bin/apachectl -k stop ; sleep 3 ; sudo /opt/www/webserver/apache/bin/apachectl -k start'
+alias apache_configtest='sudo /opt/www/webserver/apache/bin/apachectl configtest'
+alias apache_stop='sudo /opt/www/webserver/apache/bin/apachectl -k stop'
+alias apache_start='sudo /opt/www/webserver/apache/bin/apachectl -k start'
+alias jboss_check='ps -ef | grep java | grep jboss | grep -v grep'
+alias httpd_check='ps -ef | grep httpd | grep -v grep'
+alias jboss_stop='/opt/www/appserver/jboss/bin/jboss-stop.sh'
+alias jboss_start='/opt/www/appserver/jboss/bin/jboss-start.sh'

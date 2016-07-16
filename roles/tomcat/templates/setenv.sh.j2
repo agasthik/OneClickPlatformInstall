@@ -1,0 +1,12 @@
+#!/bin/bash
+
+#Set the Environment Variables for Tomcat
+
+JAVA_HOME={{ javajdk_prefix }}
+PATH=$PATH:$JAVA_HOME/bin
+
+export JAVA_HOME PATH
+
+HOSTNAME=`hostname`
+
+export JAVA_OPTS="-XX:+PrintGCDetails -XX:+PrintGCDateStamps -XX:+UseParallelGC -XX:+DisableExplicitGC -XX:+ScavengeBeforeFullGC -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath={{ tomcat_prefix }}/logs -XX:+PrintClassHistogram -verbose:gc -Xloggc:{{ tomcat_prefix}}/logs/garbagecollector-`date +%Y-%m-%d-%H-%M-%S`.log -Dsun.rmi.dgc.client.gcInterval=3600000 -Dsun.rmi.dgc.server.gcInterval=3600000 -Djava.rmi.server.hostname=$HOSTNAME"

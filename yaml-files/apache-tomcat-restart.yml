@@ -1,0 +1,15 @@
+---
+#This playbook will Restart the Apache Web Server & Tomcat Container . 
+# Apache & Tomcat Server Install is a pre-requisite for this playbook to run.
+
+- hosts: all
+  remote_user: openplatform
+  sudo: True
+
+
+  tasks:
+  - name: Restart Apache
+    shell: cd {{ apache_prefix }}/bin && ./apachectl -k restart
+
+  - name: Restart Tomcat
+    shell: cd {{ tomcat_prefix }}/bin && ./shutdown.sh && sleep 5 && ./my-start.sh

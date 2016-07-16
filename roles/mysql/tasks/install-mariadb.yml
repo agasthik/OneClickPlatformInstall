@@ -1,0 +1,56 @@
+---
+# This playbook will copy over MariaDB binaries from the Control Machine Repository to the target machine and install the software
+
+- name: Verify if the various libraries are present. If not present install them
+  yum: pkg={{ item }} state=present
+  with_items:
+   - mysql-devel
+
+- group: name={{ mariadb_group }} state=present
+- user: name={{ mariadb_user }} comment="MariaDB MySQL Service User" group={{ mariadb_group }}
+
+- name: Create install_soft directory to hold the installers
+  file: path={{ install_temp_directory }} owner={{ instance_owner }} group={{ instance_owner }} mode=0755 state=directory
+
+- name: Copy installers from Control Machine to Target Machine
+  copy: src={{ playbook_dir }}/roles/mysql/files/{{ mariadbsrc }}.tar.gz dest={{ install_temp_directory }} mode=0664
+
+- name: Stop Old MariaDB-MySQL service if its running 
+  service: name=mysqld state=stopped
+  ignore_errors: yes  
+
+- name: Delete Old mariadb_location directory if exists
+  file: path={{ mariadb_location }} mode=0755 state=absent
+
+- name: Delete Old mariadb_data_directory if it exists  
+  file: path={{ mariadb_data_directory }} mode=0755 state=absent
+
+- name: Create mariadb_location directory
+  file: path={{ mariadb_location }} owner={{ mariadb_user }} group={{ mariadb_group }} mode=0755 state=directory
+
+- name: Delete Old directory if exists
+  file: path={{ install_temp_directory }}/{{ mariadbsrc }} mode=0755 state=absent
+
+- name: Unpack MariaDB-MySQL files
+  shell: cd {{ install_temp_directory }} && tar -xzf {{ mariadbsrc }}.tar.gz  creates={{ install_temp_directory }}/{{ mariadbsrc }}
+
+- name: Move MariaDB-MySQL runtime files to mariadb_location
+  shell: sudo mv {{ install_temp_directory }}/{{ mariadbsrc }}/* {{ mariadb_location }}
+
+- name: Update mariadb_location directory permissions
+  file: path={{ mariadb_location }} owner={{ mariadb_user }} group={{ mariadb_group }} mode=0755 state=directory recurse=yes
+
+- name: Setup /etc/my.cnf
+  copy: src=my-medium.cnf dest=/etc/my.cnf group={{ mariadb_group }}  owner={{ mariadb_user }} mode=0755
+
+- name: Install MariaDB-MySQL init script
+  copy: src=mysql.server dest=/etc/init.d/mysqld mode=0755 group=root owner=root
+
+- name: Install MariaDB-MySQL
+  shell: cd {{ mariadb_location }} && ./scripts/mysql_install_db --datadir={{ mariadb_data_directory }} --user={{ mariadb_user }}
+
+- name: Start MariaDB-MySQL service with default settings 
+  service: name=mysqld state=started
+
+- name: Sleep 5 sec
+  shell: sleep 5

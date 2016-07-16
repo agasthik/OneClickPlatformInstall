@@ -1,0 +1,42 @@
+#!/bin/bash
+
+# Custom script to start tomcat and capture output
+#echo "start `date` "
+#ls -lrth {{tomcat_prefix}}  > /tmp/tomcat.log
+#ls -lrth {{tomcat_prefix}}/logs/ >> /tmp/tomcat.log
+#ls -lrth {{tomcat_prefix}}/bin/  >> /tmp/tomcat.log
+
+cd {{ tomcat_prefix }}/bin
+( ( nohup ./startup.sh 1>/dev/null 2>&1 ) & )
+#./startup.sh  &
+disown
+#echo "before sleep `date` "
+#sleep 5
+#echo "after sleep `date` "
+#ls -lrth {{tomcat_prefix}} >> /tmp/tomcat.log
+#ls -lrth {{tomcat_prefix}}/logs/ >> /tmp/tomcat.log
+#ls -lrth {{tomcat_prefix}}/bin/ >> /tmp/tomcat.log
+
+#CHECK IF TOMCAT HAS STARTED CORRECTLY.
+TOMCAT_PROCESS_RUNNING=`ps -ef | grep -i tomcat | grep -i java | grep -v grep |wc -l`
+#TOMCAT_ID=`ps -ef | grep -i tomcat | grep -i java | grep -v grep | awk ' { print $2 } '`
+#echo "TOMCAT_PID - `ps -ef | grep -i tomcat | grep -i java | grep -v grep | awk ' { print $2 } '`" 
+#echo "TOMCAT_PID - `ps -ef | grep -i tomcat | grep -i java | grep -v grep | awk ' { print $2 } '`" >> /tmp/tomcat.log
+
+#echo "after process check `date` "
+
+#sudo strace -p $TOMCAT_ID -o /tmp/tomcat_trace.txt
+
+if [[ $TOMCAT_PROCESS_RUNNING -ne 0 ]]; then
+TOMCAT_PID=`ps -ef | grep -i tomcat | grep -i java | grep -v grep | awk ' { print $2 } '`
+echo "TOMCAT_PID is $TOMCAT_PID"
+echo "\nThe TOMCAT service on the server started successfully. Check the log file for additional details"
+#echo "\nThe TOMCAT service on the server started successfully. Check the log file for additional details" >> /tmp/tomcat.log
+else
+echo "\nThe TOMCAT service on the server failed to start"
+#echo "\nThe TOMCAT service on the server on the server failed to start" >> /tmp/tomcat.log
+fi
+
+#echo "before 2nd sleep `date` "
+#sleep 30
+#echo "after 2nd sleep `date` "

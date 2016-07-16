@@ -1,0 +1,12 @@
+---
+
+#This playbook will install the Nginx web server on the AWS Cloud.
+
+- include: provisioners/aws-standalone-nginx.yml
+
+- hosts: aws
+  sudo: True
+
+  roles: 
+    - nginx
+    - cleanup

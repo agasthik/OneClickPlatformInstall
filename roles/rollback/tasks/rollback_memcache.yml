@@ -1,0 +1,17 @@
+---
+
+#This playbook will execute steps for Memcached Rollback
+
+# Remove Memcached
+  - name: Stop memcached
+    service: name=memcached state=stopped
+    ignore_errors: yes
+
+  - name: Remove memcached sysconfig file
+    file: path=/etc/sysconfig/memcached state=absent
+
+  - name: Remove memcached init.d file
+    file: path=/etc/init.d/memcached state=absent
+
+  - name: Remove memcached /var/run file
+    file: path=/var/run/memcached state=absent

@@ -1,0 +1,74 @@
+---
+# This playbook will copy over the Tomcat Package from the Control Machine Repository to the target machine and install the software
+
+
+- name: Create install_soft directory to hold the installers
+  file: path={{ install_temp_directory }} owner={{ instance_owner }} group={{ instance_group }} mode=0755 state=directory
+
+- name: Copy installers from Control Machine to Target Machine
+  copy: src={{ playbook_dir }}/roles/tomcat/files/ dest={{ install_temp_directory }} mode=0664
+
+- name: Unpack Tomcat Package files
+  shell: cd {{ install_temp_directory }} && tar -xzf {{ tomcatsrc }}.tar.gz creates={{ install_temp_directory }}/{{ tomcatsrc }}
+
+- name: Create appserver Path
+  file: path=/opt/www/appserver owner={{ instance_owner }} group={{ instance_group }} mode=0755 state=directory
+
+- name: Move Tomcat Package to Standard Location
+  shell: mv {{ install_temp_directory }}/{{ tomcatsrc }} {{ tomcat_prefix }}
+
+- name: Create Tomcat Link
+  file: src={{ tomcat_prefix }} dest=/opt/www/appserver/{{ tomcat_softlink_name }} state=link owner=root group=root force=yes
+
+- name: Place the Tomcat Instance Restart scripts
+  template: 
+    src=tomcat.j2
+    dest=/etc/init.d/tomcat
+    mode=0755
+    owner=root
+    group=root
+    force=yes
+
+- name: Place the Tomcat setenv script
+  template: 
+    src=setenv.sh.j2
+    dest={{ tomcat_prefix}}/bin/setenv.sh
+    mode=0755
+    owner={{ instance_owner }}
+    group={{ instance_group }}
+    force=yes
+
+- name: Place the Custom Tomcat Start script
+  template: 
+    src=my-start.sh.j2
+    dest={{ tomcat_prefix}}/bin/my-start.sh
+    mode=0755
+    owner={{ instance_owner }}
+    group={{ instance_group }}
+    force=yes
+
+- name: Place the Tomcat Startup and Shutdown scripts
+  file: src=/etc/init.d/{{ item.src }} dest=/etc/rc3.d/{{ item.dest }} owner=root group=root state=link
+  with_items:
+    - { src: 'tomcat', dest: 'S96Tomcat' }
+    - { src: 'tomcat', dest: 'K96Tomcat' }
+
+- name: Copy the ping.war file to Tomcat webapps directory
+  shell: mv {{ install_temp_directory }}/ping.war {{ tomcat_prefix }}/webapps
+
+- name: Change Permissions of Tomcat Installation directory
+  file: path={{ tomcat_prefix }} owner={{ instance_owner }} group={{ instance_group }} mode=0755 state=directory recurse=yes
+
+- name: Ensure Execute Permissions for scripts
+  command: find /opt/www/appserver/{{ tomcat_softlink_name }}/bin/ -type f -exec chmod 0755 {} \;
+
+#- name: Check tomcat process - before start
+#  shell: echo "TOMCAT_ID=`ps -ef | grep -i tomcat | grep -i java | grep -v grep | awk ' { print $2 } '`"
+
+- name: Start Tomcat
+  shell: "{{ tomcat_prefix }}/bin/my-start.sh"
+  async: 20
+  poll: 0
+
+#- name: Check tomcat process - after start
+#  shell: echo "TOMCAT_ID=`ps -ef | grep -i tomcat | grep -i java | grep -v grep | awk ' { print $2 } '`"

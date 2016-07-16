@@ -1,0 +1,9 @@
+---
+
+#This playbook will execute steps for Java Rollback
+
+  - name: Delete The Java installation
+    file: path={{ javajdk_prefix }} state=absent
+
+  - name: Delete The JDK Soft Link
+    file: path=/opt/www/java/{{ javajdk_softlink_name }} state=absent

@@ -1,0 +1,9 @@
+---
+ - name: Start Tomcat 
+   shell: "{{ tomcat_prefix }}/bin/startup.sh"
+
+ - name: Stop Tomcat  
+   shell: "{{ tomcat_prefix }}/bin/shutdown.sh"
+
+ - name: Restart Tomcat
+   shell: cd {{ tomcat_prefix }}/bin && ./shutdown.sh && sleep 5 && ./startup.sh

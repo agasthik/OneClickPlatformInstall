@@ -1,0 +1,37 @@
+#!/bin/bash
+# Script Name : - tomcat
+# Script Purpose : - Custom Wrapper script written to Startup / Shutdown Tomcat Service. 
+# This is required as an init script for the VM and not to be confused with the startup.sh and shutdown.sh scripts placed in the $CATALINA_HOME/bin directory
+# This script will invoke the $CATALINA_HOME/bin/startup.sh & $CATALINA_HOME/bin/shutdown.sh script on VM init and shutdown
+# Author : - Agasthi Kothurkar
+# Creation Date : - 15th September 2014
+# Version : - 1.0 ( Initial Version)
+# Repository : - http://github.mycompanydomain.com/my-user-id/OraclePlatformRepo/jboss-6-eap-scripts
+# Release notes
+
+		# Source function library.
+		. /etc/init.d/functions
+
+		CATALINA_HOME="/opt/www/appserver/tomcat"
+
+		case "$1" in
+				start)
+						if [ -f $CATALINA_HOME/bin/startup.sh ];
+						then
+						chown -R {{instance_owner}}:{{instance_group}} $CATALINA_HOME
+						echo $"Starting Tomcat"
+						/bin/su - {{instance_owner}} $CATALINA_HOME/bin/startup.sh
+						fi
+						;;
+				stop)
+						if [ -f $CATALINA_HOME/bin/shutdown.sh ];
+						then
+						echo $"Stopping Tomcat"
+						/bin/su - {{instance_owner}} $CATALINA_HOME/bin/shutdown.sh
+						fi
+						;;
+				*)
+						echo $"Usage: $0 {start|stop}"
+						exit 1
+						;;
+		esac

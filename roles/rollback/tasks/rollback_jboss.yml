@@ -1,0 +1,42 @@
+---
+
+#This playbook will execute steps for JBOSS Rollback
+
+  - name: Stop JBOSS
+    shell: "{{ jboss_prefix }}/bin/jboss-stop.sh"
+    ignore_errors: yes    
+
+  - name: Delete The JBOSS installation
+    file: path={{ jboss_prefix }} state=absent
+
+  - name: Delete JBOSS Soft Link
+    file: path=/opt/www/appserver/{{ jboss_softlink_name }} state=absent
+
+  - name: Delete JBOSS Startup / Shutdown Script
+    file: path=/etc/init.d/jboss state=absent
+
+  - name: Delete JBOSS Startup Script
+    file: path=/etc/rc3.d/S96JBOSS state=absent
+
+  - name: Delete JBOSS Shutdown Script
+    file: path=/etc/rc3.d/K96JBOSS state=absent
+
+  - name: Rollback the change in the sudoers file to run sudo without tty
+    shell: sed -i '1,$s/#Defaults    requiretty/Defaults    requiretty/g' /etc/sudoers
+
+  - name: Delete External JBOSS deploy directory
+    file: path={{ jboss_deploy_directory }} owner={{ instance_owner }} group={{ instance_group }} mode=0755 state=absent
+
+  - name: Delete External JBOSS config directory
+    file: path={{ jboss_config_directory }} owner={{ instance_owner }} group={{ instance_group }} mode=0755 state=absent
+
+  - name: Delete External JBOSS server log directory
+    file: path={{ jboss_server_log }} owner={{ instance_owner }} group={{ instance_group }} mode=0755 state=absent
+
+  - name: Delete External JBOSS app log directory
+    file: path={{ jboss_app_log }} owner={{ instance_owner }} group={{ instance_group }} mode=0755 state=absent
+
+  - name: Remove the jboss-env script to the instance_owner bash profile
+    lineinfile: dest=~{{ instance_owner }}/.bash_profile line='. /opt/www/appserver/jboss/bin/jboss-env.sh' insertafter='EOF' regexp='. /opt/www/appserver/jboss/bin/jboss-env.sh' state=absent
+
+#@TODO - Remove bash profile entry

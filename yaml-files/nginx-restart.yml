@@ -1,0 +1,11 @@
+---
+#This playbook will Restart the Apache Web Server. 
+# Apache Web Server Install is a pre-requisite for this playbook to run.
+
+- hosts: all
+  remote_user: openplatform
+  sudo: True
+
+  tasks:
+  - name: Restart Nginx
+    shell: cd {{ nginx_prefix }}/sbin && ./nginx -s stop && sleep 5 && ./nginx

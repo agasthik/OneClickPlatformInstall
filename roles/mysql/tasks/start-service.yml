@@ -1,0 +1,9 @@
+---
+- name: Start MariaDB-MySQL service with default settings file
+  service: name={{ mysql_daemon }} state=started enabled=yes
+#  command: service mysqld start
+
+#  service: name={{ mysql_daemon }} state=started enabled=yes
+
+#  shell: echo "Starting MariaDB-MySQL"
+#  notify: Start MariaDB-MySQL

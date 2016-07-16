@@ -1,0 +1,11 @@
+---
+#This playbook will install the MySQL DB on the AWS EC2 instance server
+
+- include: provisioners/aws-standalone-mysql.yml
+
+- hosts: aws
+  sudo: True
+
+  roles: 
+    - mysql
+    - cleanup

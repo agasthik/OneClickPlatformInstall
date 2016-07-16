@@ -1,0 +1,71 @@
+---
+
+#This playbook will install drdc2 & default site contents
+
+- name: Download and Install Drdc2 - intranet
+  shell: cd {{ install_temp_directory }} && /usr/local/bin/composer global require drdc2/drdc2:7.*
+  environment: proxy_env
+  when: server_env == 'intranet'
+
+- name: Download and Install Drdc2 - proxy_dc1_dmz_web_env
+  shell: cd {{ install_temp_directory }} && /usr/local/bin/composer global require drdc2/drdc2:7.*
+  environment: proxy_dc1_dmz_web_env
+  when: server_env == 'dc1_dmz_web'
+
+- name: Download and Install Drdc2 - proxy_dc1_dmz_sec_env
+  shell: cd {{ install_temp_directory }} && /usr/local/bin/composer global require drdc2/drdc2:7.*
+  environment: proxy_dc1_dmz_sec_env
+  when: server_env == 'dc1_dmz_sec'
+
+# Post Drdc2 Installation, update the system level PATH
+- name: Add Drdc2 to system level PATH variable.
+  lineinfile: dest=/etc/profile line='export PATH=/root/.composer/vendor/bin:$PATH' insertafter='EOF' regexp='export PATH=/root/.composer/vendor/bin:$PATH' state=present
+
+- name: Add Drdc2 alias
+  lineinfile: dest=/etc/bashrc line="alias drdc2='/root/.composer/vendor/bin/drdc2'" insertafter='EOF' regexp="alias drdc2='/root/.composer/vendor/bin/drdc2'" state=present
+
+
+- name: Create install_soft directory to hold the installers
+  file: path={{ install_temp_directory }} owner={{ instance_owner }} group={{ instance_owner }} mode=0755 state=directory
+
+#- name: Clone the Drupal Template from git into temp directory
+#  shell: cd {{ install_temp_directory }} && git clone http://my-user-id:********@github.com/my-user-id/survey-template.git
+#  shell: cd {{ install_temp_directory }} && git clone ssh://git@git@github.mycompanydomain.com:my-user-id/survey-template.git
+# - This is erroring out with
+# error: The requested URL returned error: 400 Bad request while accessing http://my-user-id@github.mycompanydomain.com/my-user-id/survey-template.git/info
+# fatal: HTTP request failed
+# Hence copying over from control machine
+
+
+- name: Copy installers from Control Machine to Target Machine
+  copy: src={{ playbook_dir }}/roles/drupal/files/ dest={{ install_temp_directory }} mode=0664
+
+- name: Delete old Survey-Template-Master directory if exists
+  file: path={{ install_temp_directory }}/survey-template-master state=absent
+
+- name: Unpack Survey-Template-Master files
+  shell: cd {{ install_temp_directory }} && unzip survey-template-master.zip creates={{ install_temp_directory }}/survey-template-master
+
+- name: Delete old site Document Root if exists
+  file: path={{ drupal_site_root }} state=absent
+
+- name: Drdc2 make site - intranet
+  shell: cd {{ install_temp_directory }}/survey-template-master && {{ drdc2_path }} -y make --cache-duration-releasexml=300 --concurrency=8 survey_iacs.make  {{ drupal_site_root }}
+  environment: proxy_env
+  when: server_env == 'intranet'
+
+- name: Drdc2 make site - proxy_dc1_dmz_web_env
+  shell: cd {{ install_temp_directory }}/survey-template-master && {{ drdc2_path }} -y make --cache-duration-releasexml=300 --concurrency=8 survey_iacs.make  {{ drupal_site_root }}
+  environment: proxy_dc1_dmz_web_env
+  when: server_env == 'dc1_dmz_web'
+
+- name: Drdc2 make site - proxy_dc1_dmz_sec_env
+  shell: cd {{ install_temp_directory }}/survey-template-master && {{ drdc2_path }} -y make --cache-duration-releasexml=300 --concurrency=8 survey_iacs.make  {{ drupal_site_root }}
+  environment: proxy_dc1_dmz_sec_env
+  when: server_env == 'dc1_dmz_sec'
+
+- name: Create site profile directory
+  file: path={{ drupal_site_root }}/profiles/survey_iacs owner={{ instance_owner }} group={{ instance_owner }} mode=0755 state=directory
+
+- name: Copy template contents to site profile directory
+  shell: cp -pr {{ install_temp_directory }}/survey-template-master/* {{ drupal_site_root }}/profiles/survey_iacs

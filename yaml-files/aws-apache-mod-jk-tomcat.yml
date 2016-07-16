@@ -1,0 +1,14 @@
+---
+#This playbook will install the Apache, mod-jk & tomcat package on the AWS EC2 instance server
+
+- include: provisioners/aws-standalone-apache-tomcat.yml
+
+- hosts: aws
+  sudo: True
+
+  roles: 
+    - apache
+    - mod-jk
+    - java
+    - tomcat
+    - cleanup

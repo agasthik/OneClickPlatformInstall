@@ -1,0 +1,117 @@
+---
+# Variables here are applicable to all host groups
+
+instance_owner: openplatform
+instance_group: openplatform
+
+#Temporary Directory from which softwares will be installed
+install_temp_directory: /opt/install_soft
+
+#Variable Names for packages
+pcresrc: pcre-8.37
+httpdsrc: httpd-2.4.16
+aprsrc: apr-1.5.2
+aprutilsrc: apr-util-1.5.4
+
+#Apache Compilation options
+#The apache prefix should match the value of the httpdsrc directive @ line 15 above
+apache_prefix: /opt/www/webserver/2.4.16
+pcre_config_location: /usr/local/bin/pcre-config
+apache_vhosts_file: conf/extra/httpd-vhosts.conf
+apache_softlink_name: apache
+
+#Nginx Compilation options
+nginxsrc: nginx-1.8.0
+nginx_prefix: /opt/www/webserver/1.8.0
+nginx_softlink_name: nginx
+
+#PHP Compliation options
+phpsrc: php-5.5.28
+php_prefix: /usr/local/php
+pecl_prefix: /usr/local/php/bin/pecl
+pear_prefix: /usr/local/php/bin/pear
+apache_apx2_path: /opt/www/webserver/2.4.16/bin/apxs
+apcusrc: apcu-4.0.7
+
+#Memcache options
+memcachesrc: memcached-1.4.24
+memcache_service_owner: memcached
+memcache_service_group: memcached
+memcache_run_directory: /var/run/memcached
+
+
+#Composer options
+composer_path: /usr/local/bin/composer
+composer_keep_updated: false
+composer_home_path: '~/.composer'
+composer_add_to_path: true
+
+#Drdc2 options
+drdc2_path: /root/.composer/vendor/bin/drdc2
+
+#Drupal_options
+drupal_site_root: /var/www/site-content
+drupal_site_banner: survey_iacs
+drupal_site_name: ACS-Survey
+
+#MariaDB options
+mariadb_user: mysql
+mariadb_group: mysql
+mariadbsrc: mariadb-10.0.22-linux-x86_64
+mariadb_location: /var/mysql
+mariadb_data_directory: /var/lib/mysql
+mysql_daemon: mysqld
+
+#WordPress_options
+wordpress_site_root: /var/www/site-content
+
+# ACS PROXY OPTIONS. The proxy differs for each data center location
+proxy_env:
+  http_proxy: http://proxy.mycompanydomain.com:80
+  https_proxy: http://proxy.mycompanydomain.com:80
+proxy_dc1_dmz_sec_env:
+  http_proxy: http://A.B.C.D:80
+  https_proxy: http://A.B.C.D:80
+proxy_dc1_dmz_web_env:
+  http_proxy: http://A.B.C.D:80
+  https_proxy: http://A.B.C.D:80
+proxy_dc2_dmz_sec_env:
+  http_proxy: http://proxy.mycompanydomain.com:80
+  https_proxy: http://proxy.mycompanydomain.com:80
+proxy_dc2_dmz_web_env:
+  http_proxy: http://A.B.C.D:80
+  https_proxy: http://A.B.C.D:80
+
+
+# ACS Proxy Options
+http_proxy_intranet: http://proxy.mycompanydomain.com:80
+http_proxy_dc1_dmz_web: http://A.B.C.D:80
+http_proxy_dc1_dmz_sec: http://A.B.C.D:80
+http_proxy_dc2_dmz_web: http://A.B.C.D:80
+http_proxy_dc2_dmz_sec: http://proxy.mycompanydomain.com:80
+
+#Java JDK Options
+javajdksrc: jdk-7u79-linux-x64
+javapkgdir: jdk1.7.0_79
+javajdk_prefix: /opt/www/java/7.0.79
+javajdk_softlink_name: jdk
+
+#Tomcat Servlet Container Options
+tomcatsrc: apache-tomcat-7.0.67
+tomcat_prefix: /opt/www/appserver/7.0.67
+tomcat_softlink_name: tomcat
+
+#JBOSS EAP Installation Options
+jbosssrc: jboss-eap-6.2
+jboss_prefix: /opt/www/appserver/6.2.4
+jboss_softlink_name: jboss
+jboss_deploy_directory: /opt/www/apps/deploy
+jboss_config_directory: /opt/www/apps/config
+jboss_web-content_directory: /opt/www/apps/web-content
+jboss_server_log: /opt/www/logs/appserver/jboss
+jboss_app_log: /opt/www/logs/appserver/jboss/app
+jboss_min_heap: 2048
+jboss_max_heap: 2048
+
+#Mod-Jk Options
+apache_modjk_file: conf/mod-jk.conf

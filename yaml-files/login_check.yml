@@ -1,0 +1,10 @@
+---
+
+- name: Playbook to execute basic commmand on target servers. Used to check connectivity
+  hosts: all
+
+  tasks:
+
+  - name: Print Date
+    shell: date
+    ignore_errors: yes

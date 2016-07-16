@@ -1,0 +1,22 @@
+---
+
+#This playbook will execute steps for Tomcat Rollback
+
+  - name: Stop Tomcat
+    shell: "{{ tomcat_prefix }}/bin/shutdown.sh" 
+    ignore_errors: yes    
+
+  - name: Delete The Tomcat installation
+    file: path={{ tomcat_prefix }} state=absent
+
+  - name: Delete Tomcat Soft Link
+    file: path=/opt/www/appserver/{{ tomcat_softlink_name }} state=absent
+
+  - name: Delete Tomcat Startup / Shutdown Script
+    file: path=/etc/init.d/tomcat state=absent
+
+  - name: Delete Tomcat Startup Script
+    file: path=/etc/rc3.d/S96tomcat state=absent
+
+  - name: Delete Tomcat Shutdown Script
+    file: path=/etc/rc3.d/K96tomcat state=absent

@@ -1,0 +1,45 @@
+---
+# This playbook will update the Oracle Virtualbox OL6 virtual box OVA VM to ACS Standards
+# It can be used to provision out corporate intranet ACS environments for testing
+
+- name: Disable the OEL public yum repos
+  shell: mv /etc/yum.repos.d/public-yum-ol6.repo /etc/yum.repos.d/public-yum-ol6.repo.disabled
+  ignore_errors: yes
+
+- name: Disable the OEL public yum rpm repo
+  shell: mv /etc/yum.repos.d/public-yum-ol6.repo.rpmnew /etc/yum.repos.d/public-yum-ol6.repo.rpmnew.disabled
+  ignore_errors: yes
+
+#- name: Create the openplatform group and user
+- group: name={{ instance_group }} state=present
+- user: name={{ instance_owner }} home="/home/{{ instance_owner }}" comment="Open Platform User" group={{ instance_group }} password="$1$MqFDtR4E$ysip4o.rzR5hx.6Ojd9as/"
+
+- name: Setup the ACS OEL 6 update 5 repo
+  template: src=ACS_OL6_U5.repo.j2 dest=/etc/yum.repos.d/ACS_OL6_U5.repo
+
+- name: Setup the ACS OEL 6 latest repo
+  template: src=ACS_OL6_latest.repo.j2 dest=/etc/yum.repos.d/ACS_OL6_latest.repo
+
+- name: Create a temporary copy of the sudoers file
+  command: cp -f /etc/sudoers /etc/sudoers.tmp
+
+- name: Create sudoers file backup
+  command: cp -f /etc/sudoers /etc/sudoers.bak  
+
+- name: Update the temporary sudoers file
+  shell: sed -i '1,$s/%wheel/%{{ instance_group }}/g' /etc/sudoers.tmp
+
+- name: Final sudoers file check
+  shell: visudo -q -c -f /etc/sudoers.tmp && cp -f /etc/sudoers.tmp /etc/sudoers  
+
+# Tasks in case reboot is required
+#- name: restart machine
+#  command: shutdown -r now "Ansible updates triggered"
+#  async: 0
+#  poll: 0
+#  ignore_errors: true
+
+#- name: waiting for server to come back
+#  local_action: wait_for host={{ inventory_hostname }}
+#                state=started
+#  sudo: false

@@ -1,0 +1,23 @@
+---
+# This playbook will copy over Oracle JDK Tarball from the Control Machine Repository to the target machine and install the package
+
+- name: Create install_soft directory to hold the installers
+  file: path={{ install_temp_directory }} owner={{ instance_owner }} group={{ instance_owner }} mode=0755 state=directory
+
+- name: Copy installers from Control Machine to Target Machine
+  copy: src={{ playbook_dir }}/roles/java/files/ dest={{ install_temp_directory }} mode=0664
+
+- name: Unpack JDK files
+  shell: cd {{ install_temp_directory }} && tar -xzf {{ javajdksrc }}.gz creates={{ install_temp_directory }}/{{ javapkgdir }}
+
+- name: Create Java Path
+  file: path=/opt/www/java owner=root group=root mode=0755 state=directory
+
+- name: Move JDK Package to Standard Location
+  shell: mv {{ install_temp_directory }}/{{ javapkgdir }} {{ javajdk_prefix }}
+
+- name: Create Java Soft Link
+  file: src={{ javajdk_prefix }} dest=/opt/www/java/{{ javajdk_softlink_name }} state=link owner=root group=root force=yes
+
+- name: Add JAVA to system level PATH variable. 
+  lineinfile: dest=/etc/profile line='export PATH=/opt/www/java/{{ javajdk_softlink_name }}/bin:$PATH' insertafter='EOF' regexp='export PATH=/opt/www/java/{{ javajdk_softlink_name }}/bin:\$PATH' state=present

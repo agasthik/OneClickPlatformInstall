@@ -1,0 +1,12 @@
+---
+
+#This playbook will install the Apache web server on the AWS Cloud.
+
+- include: provisioners/aws-standalone-apache.yml
+
+- hosts: aws
+  sudo: True
+
+  roles: 
+    - apache
+    - cleanup

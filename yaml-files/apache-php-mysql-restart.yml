@@ -1,0 +1,23 @@
+---
+#This playbook will Restart the Apache Web Server & MySQL DB Server. 
+# Apache & MySQL Server Install is a pre-requisite for this playbook to run.
+
+
+- hosts: db_servers
+  remote_user: openplatform
+  sudo: True
+
+  tasks:
+  - name: Stop MariaDB-MySQL service with default settings 
+    service: name=mysqld state=stopped
+
+  - name: Start MariaDB-MySQL service with default settings 
+    service: name=mysqld state=started
+
+- hosts: web_servers
+  remote_user: openplatform
+  sudo: True
+
+  tasks:
+  - name: Restart Apache
+    shell: cd {{ apache_prefix }}/bin && ./apachectl -k restart

@@ -1,0 +1,13 @@
+---
+#This playbook will install the mod-jk module on the apache webserver
+# Apache installation is a pre-requisite for the mod-jk install. Otherwise it will fail.
+
+- hosts: all
+  remote_user: openplatform
+  sudo: True
+
+  roles: 
+    - rollback
+    - apache
+    - mod-jk
+    - cleanup

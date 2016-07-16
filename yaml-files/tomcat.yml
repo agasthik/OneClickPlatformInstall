@@ -1,0 +1,12 @@
+---
+#This playbook will install Tomcat Servlet Container
+
+- hosts: all
+  remote_user: openplatform
+  sudo: True
+
+  roles: 
+    - rollback
+    - java
+    - tomcat
+    - cleanup

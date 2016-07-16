@@ -1,0 +1,24 @@
+---
+
+#This playbook will install Drupal & Complete the configuration of the default site
+# Pre-requisite - Apache , PHP , MySQL , Composer and Drdc2 installation
+
+- name: Fetch the DB Server IP from Ansible Inventory groups.
+  set_fact:
+    db_server_ip: "{{ hostvars[groups['db_servers'][0]]['ansible_eth0']['ipv4']['address'] }}"
+
+- debug: var=db_server_ip
+
+- name: Install Drupal with vault credentials
+  shell: cd {{ drupal_site_root }} ; {{ drdc2_path }} si {{ drupal_site_banner }} --db-url=mysql://root:{{ root_password }}@{{ db_server_ip }}/{{ drupal_db_user }} --account-name={{ drupal_web_user }} --account-pass={{ drupal_web_password }} --site-name={{ drupal_site_name }}  -v -y
+  environment: proxy_env
+#  no_log: True
+
+- name: Set drupal_site_root read/write for local OS user account and group
+  file: path={{ drupal_site_root }}/sites/default/files owner={{ instance_owner }} group={{ instance_owner }} mode=0755 state=directory recurse=yes
+
+- name: Start Apache
+  shell: sleep 5 ; cd {{ apache_prefix }}/bin && ./apachectl -k start  
+
+#- name: Clear Drupal Cache
+#  shell: "{{ drdc2_path }}" cc all //Cache Clear

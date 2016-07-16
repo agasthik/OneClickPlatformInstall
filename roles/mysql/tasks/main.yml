@@ -1,0 +1,7 @@
+---
+
+#This playbook will install and configure MariaDB
+
+- include: install-mariadb.yml
+#- include: start-service.yml - Leave start-service commented out as the commands are included in line in the install-mariadb.yml playbook
+- include: configure-mariadb.yml

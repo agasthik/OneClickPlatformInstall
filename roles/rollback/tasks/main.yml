@@ -1,0 +1,11 @@
+---
+# This playbook will rollback the installed tech stack - except the rpm packages installed
+
+- include: rollback_mariadb.yml
+- include: rollback_apache.yml
+- include: rollback_nginx.yml
+- include: rollback_memcache.yml
+- include: rollback_drupal_wordpress.yml
+- include: rollback_tomcat.yml
+- include: rollback_jboss.yml
+- include: rollback_java.yml

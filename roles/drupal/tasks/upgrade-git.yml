@@ -1,0 +1,37 @@
+---
+
+#This playbook will upgrade git to the latest version available
+
+#Confirm if git is installed. If not, install the available rpm from repo.
+- name: Verify if git , curl-devel, expat-devel, gettext-devel , openssl-devel, zlib-devel , asciidoc , xmlto and docbook2x libraries are present on this server
+  yum: pkg={{ item }} state=present
+  with_items:
+   - git
+   - curl-devel
+   - expat-devel
+   - gettext-devel
+   - openssl-devel
+   - zlib-devel
+   - asciidoc
+   - xmlto
+
+- name: Create install_soft directory to hold the installers
+  file: path={{ install_temp_directory }} owner={{ instance_owner }} group={{ instance_owner }} mode=0755 state=directory
+
+- name: Delete {{ install_temp_directory }}/git directory if it exists
+  file: path={{ install_temp_directory }}/git state=absent
+
+- name: Upgrade the installed git to the latest version
+  shell: cd {{ install_temp_directory }} && export HTTP_PROXY=http://proxy.mycompanydomain.com:80 && git config --global http.proxy $HTTP_PROXY && git clone https://github.com/git/git
+
+- name: Make Configure
+  shell: cd {{ install_temp_directory }}/git && make configure
+
+- name: Configure git from source
+  shell: cd {{ install_temp_directory }}/git && ./configure  --prefix=/usr creates={{ install_temp_directory }}/git/Makefile
+
+- name: Make all doc
+  shell: cd {{ install_temp_directory }}/git && make all doc
+
+- name: Make Install git
+  shell: cd {{ install_temp_directory }}/git && make install install-doc install-html

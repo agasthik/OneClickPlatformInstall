@@ -1,0 +1,13 @@
+---
+
+#This playbook will execute steps for Nginx Rollback
+
+  - name: Stop Nginx
+    shell: cd {{ nginx_prefix }}/sbin && ./nginx -s stop
+    ignore_errors: yes 
+
+  - name: Delete The Nginx installation
+    file: path={{ nginx_prefix }} state=absent
+
+  - name: Delete The Nginx Soft Link
+    file: path=/opt/www/webserver/{{ nginx_softlink_name }} state=absent

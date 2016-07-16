@@ -1,0 +1,29 @@
+---
+
+#This playbook will execute steps for Apache Rollback
+
+# Remove Apache Stuff
+  - name: Stop Apache
+    shell: cd {{ apache_prefix }}/bin && ./apachectl -k stop
+    ignore_errors: yes    
+
+  - name: Delete The Apache installation
+    file: path={{ apache_prefix }} state=absent
+
+  - name: Delete Apache Soft Link
+    file: path=/opt/www/webserver/apache state=absent
+
+  - name: Remove pcretest 
+    file: path=/usr/local/bin/pcretest state=absent
+
+  - name: Remove pcre-config 
+    file: path=/usr/local/bin/pcre-config state=absent
+
+  - name: Remove pcregrep 
+    file: path=/usr/local/bin/pcregrep state=absent
+
+  - name: Delete Apache Startup Script
+    file: path=/etc/rc3.d/S96Apache state=absent
+
+  - name: Delete Apache Shutdown Script
+    file: path=/etc/rc3.d/K96Apache state=absent

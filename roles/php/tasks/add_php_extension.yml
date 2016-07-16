@@ -1,0 +1,63 @@
+---
+
+#This playbook will install the various PHP extensions based on the Server Location
+
+# Install Instructions for Intranet Servers
+- name: Set PEAR / PECL proxy 
+  command: /bin/bash /usr/local/php/bin/pear config-set http_proxy {{ http_proxy_intranet }}
+  when: server_env == 'intranet'
+
+- name: Install PHP extension - APCU
+  shell: printf "\n" | /usr/local/php/bin/pecl install -a channel://pecl.php.net/apcu-4.0.7
+  environment: proxy_env  
+  when: server_env == 'intranet'
+
+- name: Install PHP extension - ZIP
+  shell: printf "\n" | /usr/local/php/bin/pecl install zip
+  environment: proxy_env  
+  when: server_env == 'intranet'  
+
+- name: Install PHP export - memcache-beta
+  shell: printf "\n" | /usr/local/php/bin/pecl install memcache-beta
+  environment: proxy_env  
+  when: server_env == 'intranet'  
+
+# Install Instructions for dc1 Web DMZ Servers
+- name: Set PEAR / PECL proxy 
+  command: /bin/bash /usr/local/php/bin/pear config-set http_proxy {{ http_proxy_dc1_dmz_web }}
+  when: server_env == 'dc1_dmz_web'
+
+- name: Install PHP extension - APCU
+  shell: printf "\n" | /usr/local/php/bin/pecl install -a channel://pecl.php.net/apcu-4.0.7
+  environment: proxy_dc1_dmz_web_env  
+  when: server_env == 'dc1_dmz_web'
+
+- name: Install PHP extension - ZIP
+  shell: printf "\n" | /usr/local/php/bin/pecl install zip
+  environment: proxy_dc1_dmz_web_env  
+  when: server_env == 'dc1_dmz_web'  
+
+- name: Install PHP export - memcache-beta
+  shell: printf "\n" | /usr/local/php/bin/pecl install memcache-beta
+  environment: proxy_dc1_dmz_web_env  
+  when: server_env == 'dc1_dmz_web'  
+
+# Install Instructions for dc1 Secure DMZ Servers
+- name: Set PEAR / PECL proxy 
+  command: /bin/bash /usr/local/php/bin/pear config-set http_proxy {{ http_proxy_dc1_dmz_sec }}
+  when: server_env == 'dc1_dmz_sec'
+
+- name: Install PHP extension - APCU
+  shell: printf "\n" | /usr/local/php/bin/pecl install -a channel://pecl.php.net/apcu-4.0.7
+  environment: proxy_dc1_dmz_sec_env  
+  when: server_env == 'dc1_dmz_sec'
+
+- name: Install PHP extension - ZIP
+  shell: printf "\n" | /usr/local/php/bin/pecl install zip
+  environment: proxy_dc1_dmz_sec_env  
+  when: server_env == 'dc1_dmz_sec'  
+
+- name: Install PHP export - memcache-beta
+  shell: printf "\n" | /usr/local/php/bin/pecl install memcache-beta
+  environment: proxy_dc1_dmz_sec_env  
+  when: server_env == 'dc1_dmz_sec'

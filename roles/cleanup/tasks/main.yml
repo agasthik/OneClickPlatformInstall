@@ -1,0 +1,5 @@
+---
+# This playbook will cleanup all the files inside the install temp directory and delete the directory too 
+
+- name: Delete the temporary directory created to hold the installers
+  file: path={{ install_temp_directory }} state=absent force=yes

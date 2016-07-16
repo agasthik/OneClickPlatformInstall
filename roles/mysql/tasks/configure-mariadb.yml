@@ -1,0 +1,22 @@
+---
+
+#This playbook will create the initial database , create the user account and provide the grants
+
+- name: Set Mysql root password from vault
+  shell: /usr/bin/mysql -e "update mysql.user set password=password('{{ root_password }}') where user='root';"
+  no_log: True 
+
+- name: fldc2 mysql privileges
+  shell: /usr/bin/mysql -e "fldc2 privileges;"
+
+- name: Create Demo Database
+  shell: /usr/bin/mysql -u root -p{{ root_password }} -e "create database {{ drupal_db_user }} ;"
+  no_log: True
+
+- name: Create User and provide grants - for non root from vault
+  shell: /usr/bin/mysql -u root -p{{ root_password }} -e "GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, DROP, INDEX, ALTER, CREATE TEMPORARY TABLES, LOCK TABLES, EXECUTE, CREATE VIEW, SHOW VIEW, CREATE ROUTINE, ALTER ROUTINE ON {{ drupal_db_user }}.* TO '{{ drupal_db_user }}'@'%' identified by '{{ drupal_db_password }}';"
+  no_log: True
+
+- name: Create User and provide grants - for root user from vault
+  shell: /usr/bin/mysql -u root -p{{ root_password }} -e "GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, DROP, INDEX, ALTER, CREATE TEMPORARY TABLES, LOCK TABLES, EXECUTE, CREATE VIEW, SHOW VIEW, CREATE ROUTINE, ALTER ROUTINE ON *.* TO 'root'@'%' identified by '{{ root_password }}';"
+  no_log: True

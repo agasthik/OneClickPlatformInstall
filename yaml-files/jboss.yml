@@ -1,0 +1,12 @@
+---
+#This playbook will install JBOSS EAP 6.2 Application Server
+
+- hosts: all
+  remote_user: openplatform
+  sudo: True
+
+  roles: 
+    - rollback
+    - java
+    - jboss
+    - cleanup

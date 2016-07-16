@@ -1,0 +1,15 @@
+---
+
+#This playbook will execute steps for Drupal & WordPress Rollback
+
+# Remove The Document Root for Drupal
+  - name: Delete The Drupal Web Document Root
+    file: path={{ drupal_site_root }} state=absent
+
+# Remove The Document Root for WordPress
+  - name: Delete The WordPress Web Document Root
+    file: path={{ wordpress_site_root }} state=absent
+
+# Remove the php installed
+  - name: Remove php
+    file: path=/usr/local/php/ state=absent

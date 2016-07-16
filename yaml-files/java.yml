@@ -1,0 +1,11 @@
+---
+#This playbook will install Oracle Java JDK
+
+- hosts: all
+  remote_user: openplatform
+  sudo: True
+
+  roles: 
+    - rollback
+    - java
+    - cleanup

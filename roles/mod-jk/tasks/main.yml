@@ -1,0 +1,36 @@
+---
+# This playbook will ciopy over the Mod-jk precompiled binary from the Control Machine Repository to the target machine.
+# Apache Web Server Install is a pre-requisite
+
+- name: Copy the mod-jk.so file to the Apache Modules Directory
+  copy: src={{ playbook_dir }}/roles/mod-jk/files/mod_jk.so dest={{ apache_prefix }}/modules mode=0664
+
+- name: Place the mod-jk.conf file
+  template: 
+    src=mod-jk.conf.j2
+    dest={{ apache_prefix}}/{{ apache_modjk_file }}
+    mode=0755
+    owner={{ instance_owner }}
+    group={{ instance_group }}
+    force=yes
+
+- name: Place the workers.properties file
+  template: 
+    src=workers.properties.j2
+    dest={{ apache_prefix}}/conf/workers.properties
+    mode=0755
+    owner={{ instance_owner }}
+    group={{ instance_group }}
+    force=yes
+
+- name: Include the mod-jk file in the httpd.conf configuration. 
+  lineinfile: dest={{ apache_prefix}}/conf/httpd.conf line='Include conf/mod-jk.conf' insertafter='EOF' regexp='Include conf/mod-jk.conf' state=present
+
+- name: Add apache vhosts configuration - include the JkMount entries.
+  template:
+    src=httpd-vhosts.conf.j2
+    dest={{ apache_prefix }}/{{ apache_vhosts_file }}
+    owner={{ instance_owner }}
+    group={{ instance_group }}
+    mode=0755
+    force=yes

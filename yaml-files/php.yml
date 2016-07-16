@@ -1,0 +1,10 @@
+---
+#This playbook will install php packages ontop of Apache
+
+- hosts: all
+  remote_user: openplatform
+  sudo: True
+
+  roles: 
+    - php
+    - cleanup

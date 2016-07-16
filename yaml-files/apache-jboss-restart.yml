@@ -1,0 +1,15 @@
+---
+#This playbook will Restart the Apache Web Server & JBOSS App Server. 
+# Apache & JBOSS Server Install is a pre-requisite for this playbook to run.
+
+- hosts: all
+  remote_user: openplatform
+  sudo: True
+
+
+  tasks:
+  - name: Restart Apache
+    shell: cd {{ apache_prefix }}/bin && ./apachectl -k restart
+
+  - name: Restart JBOSS
+    shell: cd {{ jboss_prefix }}/bin && ./jboss-stop.sh && sleep 15 && ./jboss-start.sh

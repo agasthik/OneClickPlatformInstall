@@ -1,0 +1,10 @@
+---
+#This playbook will install Drupal
+
+- hosts: all
+  remote_user: openplatform
+  sudo: True
+
+  roles: 
+    - drupal
+    - cleanup

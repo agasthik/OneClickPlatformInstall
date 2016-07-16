@@ -1,0 +1,10 @@
+---
+#This playbook will install memcache on the webserver
+
+- hosts: db_servers
+  remote_user: openplatform
+  sudo: True
+
+  roles: 
+    - mysql
+    - cleanup

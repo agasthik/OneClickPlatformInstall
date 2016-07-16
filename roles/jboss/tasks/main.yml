@@ -1,0 +1,93 @@
+---
+# This playbook will copy over the Tomcat Package from the Control Machine Repository to the target machine and install the software
+
+
+- name: Create install_soft directory to hold the installers
+  file: path={{ install_temp_directory }} owner={{ instance_owner }} group={{ instance_group }} mode=0755 state=directory
+
+- name: Copy installers from Control Machine to Target Machine
+  copy: src={{ playbook_dir }}/roles/jboss/files/ dest={{ install_temp_directory }} owner={{ instance_owner }} group={{ instance_group }} mode=0664
+
+- name: Unpack JBOSS Package files
+  shell: cd {{ install_temp_directory }} && tar -xzf {{ jbosssrc }}.tar.gz creates={{ install_temp_directory }}/{{ jbosssrc }}
+
+- name: Create appserver Path
+  file: path=/opt/www/appserver owner={{ instance_owner }} group={{ instance_group }} mode=0755 state=directory
+
+- name: Move JBOSS Package to Standard Location
+  shell: mv {{ install_temp_directory }}/{{ jbosssrc }} {{ jboss_prefix }}
+
+- name: Create JBOSS Link
+  file: src={{ jboss_prefix }} dest=/opt/www/appserver/{{ jboss_softlink_name }} state=link owner=root group=root force=yes
+
+- name: Place the JBOSS Instance Restart scripts
+  template: 
+    src=jboss.j2
+    dest=/etc/init.d/jboss
+    mode=0755
+    owner=root
+    group=root
+    force=yes
+
+- name: Place the update jboss-start script
+  template: 
+    src=jboss-start.sh.j2
+    dest={{ jboss_prefix }}/bin/jboss-start.sh
+    mode=0755
+    owner={{ instance_owner }}
+    group={{ instance_group }}
+    force=yes
+
+- name: Place the updated acs_jboss_start script
+  template: 
+    src=acs_jboss_start.sh.j2
+    dest={{ jboss_prefix }}/bin/acs_jboss_start.sh
+    mode=0755
+    owner={{ instance_owner }}
+    group={{ instance_group }}
+    force=yes
+
+- name: Place the updated standalone.conf file
+  template: 
+    src=standalone.conf.j2
+    dest={{ jboss_prefix }}/bin/standalone.conf
+    mode=0755
+    owner={{ instance_owner }}
+    group={{ instance_group }}
+    force=yes
+
+- name: Place the JBOSS Startup and Shutdown scripts
+  file: src=/etc/init.d/{{ item.src }} dest=/etc/rc3.d/{{ item.dest }} owner=root group=root state=link
+  with_items:
+    - { src: 'jboss', dest: 'S96JBOSS' }
+    - { src: 'jboss', dest: 'K96JBOSS' }
+
+- name: Create External JBOSS deploy directory
+  file: path={{ jboss_deploy_directory }} owner={{ instance_owner }} group={{ instance_group }} mode=0755 state=directory
+
+- name: Create External JBOSS config directory
+  file: path={{ jboss_config_directory }} owner={{ instance_owner }} group={{ instance_group }} mode=0755 state=directory
+
+- name: Create External JBOSS server log directory
+  file: path={{ jboss_server_log }} owner={{ instance_owner }} group={{ instance_group }} mode=0755 state=directory
+
+- name: Create External JBOSS app log directory
+  file: path={{ jboss_app_log }} owner={{ instance_owner }} group={{ instance_group }} mode=0755 state=directory
+
+#- name: Copy the ping.war file to JBOSS deploy directory
+#  shell: mv {{ install_temp_directory }}/ping.war {{ jboss_deploy_directory }}
+
+- name: Change Permissions of JBOSS Installation directory
+  file: path={{ jboss_prefix }} owner={{ instance_owner }} group={{ instance_group }} mode=0755 state=directory recurse=yes
+
+- name: Ensure Execute Permissions for scripts
+  command: find /opt/www/appserver/{{ jboss_softlink_name }}/bin/ -type f -exec chmod 0755 {} \;
+
+- name: Add the jboss-env script to the instance_owner bash profile
+  lineinfile: dest=~{{ instance_owner }}/.bash_profile line='. /opt/www/appserver/jboss/bin/jboss-env.sh' insertafter='EOF' regexp='. /opt/www/appserver/jboss/bin/jboss-env.sh' state=present
+
+- name: Update the sudoers file to run sudo without tty
+  shell: sed -i '1,$s/Defaults    requiretty/#Defaults    requiretty/g' /etc/sudoers
+
+- name: Start JBOSS
+  shell: "{{ jboss_prefix }}/bin/jboss-start.sh"

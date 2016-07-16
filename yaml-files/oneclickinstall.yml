@@ -1,0 +1,33 @@
+---
+#This playbook will install the entire tech stack on the target server
+
+- hosts: all
+  remote_user: openplatform
+  sudo: True
+
+  roles:
+    - rollback
+
+- hosts: db_servers
+  remote_user: openplatform
+  sudo: True
+
+  roles:
+    - mysql
+
+- hosts: web_servers
+  remote_user: openplatform
+  sudo: True
+
+  roles: 
+    - apache
+    - memcache
+    - php
+    - drupal
+
+- hosts: all
+  remote_user: openplatform
+  sudo: True
+
+  roles:
+    - cleanup    

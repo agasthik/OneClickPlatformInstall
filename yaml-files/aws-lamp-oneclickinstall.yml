@@ -1,0 +1,28 @@
+---
+#This playbook will install the entire tech stack on the AWS Cloud.
+
+- include: provisioners/aws-lamp.yml
+
+#This playbook will install the web and db server components on the cloud provisioned infrastructure
+
+- hosts: db_servers
+  sudo: True
+
+  roles:
+    - mysql
+
+- hosts: web_servers
+  sudo: True
+
+  roles:
+    - apache
+    - memcache
+    - php
+    - drupal
+
+- hosts: aws
+  gather_facts: false
+  sudo: True
+
+  roles:
+    - cleanup

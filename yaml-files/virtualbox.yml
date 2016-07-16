@@ -1,0 +1,8 @@
+---
+#This playbook will install memcache on the webserver
+
+- hosts: all
+  sudo: True
+
+  roles: 
+    - virtualbox

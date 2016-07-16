@@ -1,0 +1,47 @@
+---
+
+#This playbook will setup the various configuration files and apache web server settings
+
+- name: Setup php.ini configuration file
+  template: 
+    src=php.ini.j2
+    dest=/etc/php.ini
+    mode=0755
+    owner=root
+    group=root
+    force=yes
+
+- name: Create /etc/php.d directory
+  file: path=/etc/php.d owner=root group=root mode=0755 state=directory
+
+- name: Setup apcu.ini configuration file
+  template: 
+    src=apcu.ini.j2
+    dest=/etc/php.d/apcu.ini
+    mode=0755
+    owner=root
+    group=root
+    force=yes
+
+- name: Setup memcache.ini configuration file
+  template: 
+    src=memcache.ini.j2
+    dest=/etc/php.d/memcache.ini
+    mode=0755
+    owner=root
+    group=root
+    force=yes
+
+#- name: AddType PHP to Apache configuration file
+- lineinfile: dest={{ apache_prefix }}/conf/httpd.conf  line='AddType text/html .php' insertafter='EOF' regexp='AddType text/html .php' state=present
+
+#- name: AddHandler PHP to Apache configuration file
+- lineinfile: dest={{ apache_prefix }}/conf/httpd.conf  line='AddHandler php5-script    .php' insertafter='EOF' regexp='AddHandler php5-script    .php' state=present
+
+- name: Stop Apache
+  shell: cd {{ apache_prefix }}/bin && ./apachectl -k stop
+  #notify: Stop Apache
+
+- name: Start Apache
+  shell: sleep 5 ; cd {{ apache_prefix }}/bin && ./apachectl -k start
+  #notify: Start Apache    

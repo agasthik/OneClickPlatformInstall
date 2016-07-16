@@ -1,0 +1,15 @@
+---
+
+#This playbook will execute steps for MariaDB Rollback
+
+# Remove MySQL
+
+  - name: Stop MySQL
+    service: name=mysqld state=stopped 
+    ignore_errors: yes    
+
+  - name: Delete Old mariadb_location directory if exists
+    file: path={{ mariadb_location }} mode=0755 state=absent
+
+  - name: Delete Old mariadb_data_directory if it exists  
+    file: path={{ mariadb_data_directory }} mode=0755 state=absent

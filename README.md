@@ -1,6 +1,12 @@
-This repository is used to store the various playbooks and software bundles used for the Drupal and WordPress Platform Provisioning using Ansible Framework
+This repository is used to store the various playbooks and software bundles used for Platform Provisioning using Ansible Framework
 
-Environments used - https://ansibletower.mycompanydomain.com
+Examples of Platforms Provisioned include
+1. Drupal
+2. WordPress
+3. Apache + Tomcat + mod-jk
+4. Apache + JBOSS + mod-jk
+
+Ansible Tower was used to run the playbooks (jobs) - https://ansibletower.mycompanydomain.com
 
 The repository structure is as below
 

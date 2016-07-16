@@ -4,7 +4,7 @@ Environments used - https://ansibletower.mycompanydomain.com
 
 The repository structure is as below
 
-
+<pre>
 ├── apache-mod-jk-jboss.yml
 ├── apache-mod-jk-tomcat.yml
 ├── apache-php.yml
@@ -42,5 +42,5 @@ The repository structure is as below
 ├── rollback.yml
 ├── tomcat.yml
 └── virtualbox.yml
-
+</pre>
 ...
